@@ -1,0 +1,24 @@
+{
+	"name": "yoga",
+	"version": "1.0.0",
+	"description": "",
+	"main": "index.js",
+	"dependencies": {},
+	"devDependencies": {
+		"jshint": "^2.11.0"
+	},
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/SlavaPush/Yoga.git"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"bugs": {
+		"url": "https://github.com/SlavaPush/Yoga/issues"
+	},
+	"homepage": "https://github.com/SlavaPush/Yoga#readme"
+}
