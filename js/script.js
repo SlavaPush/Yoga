@@ -39,26 +39,20 @@ window.addEventListener('DOMContentLoaded', function () {
 
 	//TIMER
 
-	let deadLine = '2020-03-11';
+	const deadLine = '2020-03-23';
 
 	function getTimeRemaining(endtime) {
-
-		if (Date.parse(endtime) < Date.parse(new Date())) {
-			return {
-				'total': Date.parse(endtime) - Date.parse(new Date()),
-				'days': '00',
-				'hours': '00',
-				'minutes': '00',
-				'seconds': '00'
-			};
-		}
-		let t = Date.parse(endtime) - Date.parse(new Date()),
+		// Рассчитываем кол-во милисекунд от текущей до конечной даты и преобразуем их в секунды, минуты и т.д.
+		const t = Date.parse(endtime) - Date.parse(new Date()),
 			seconds = Math.floor((t / 1000) % 60),
 			minutes = Math.floor((t / 1000 / 60) % 60),
 			hours = Math.floor((t / 1000 / 60 / 60) % 24),
 			days = Math.floor(t / (1000 * 60 * 60 * 24));
 
-
+		//Если дата меньше текущей, то выходим из функции
+		if (t <= 0) {
+			return;
+		}
 
 		return {
 			'total': t,
@@ -69,9 +63,9 @@ window.addEventListener('DOMContentLoaded', function () {
 		};
 	}
 
-	function setClock(id, endtime) {
+	function setClock(endtime) {
 
-		let timer = document.getElementById(id),
+		const timer = document.querySelector('#timer'),
 			days = timer.querySelector('.days'),
 			hours = timer.querySelector('.hours'),
 			minutes = timer.querySelector('.minutes'),
@@ -79,33 +73,26 @@ window.addEventListener('DOMContentLoaded', function () {
 			timeInterval = setInterval(updateClock, 1000);
 
 		function updateClock() {
+			//В переменную t получаем объект со значениями из первой функции
+			const t = getTimeRemaining(endtime);
 
-			let t = getTimeRemaining(endtime);
-			days.textContent = t.days;
-			if (days.textContent.length === 1) {
-				days.textContent = '0' + days.textContent;
-			}
-			hours.textContent = t.hours;
-			if (hours.textContent.length === 1) {
-				hours.textContent = '0' + hours.textContent;
-			}
-			minutes.textContent = t.minutes;
-			if (minutes.textContent.length === 1) {
-				minutes.textContent = '0' + minutes.textContent;
-			}
-			seconds.textContent = t.seconds;
-			if (seconds.textContent.length === 1) {
-				seconds.textContent = '0' + seconds.textContent;
-			}
+			t.days > 10 ?
+				days.textContent = t.days : //Страховка на случай, сли дней больше 100
+				days.textContent = '0' + t.days;
+			// Если значение состоит из одной цифры, то добавляем ноль в начало
+			hours.textContent = ('0' + t.hours).slice(-2);
+			minutes.textContent = ('0' + t.minutes).slice(-2);
+			seconds.textContent = ('0' + t.seconds).slice(-2);
 
 			if (t.total <= 0) {
+				// Останавливаем таймер, если время вышло
 				clearInterval(timeInterval);
 			}
 		}
 
 	}
 
-	setClock('timer', deadLine);
+	setClock(deadLine);
 
 
 	// Modal
@@ -135,5 +122,52 @@ window.addEventListener('DOMContentLoaded', function () {
 		document.body.style.overflow = '';
 	});
 
+	// Form
 
+	let message = {
+		loading: "Загрузка",
+		sucsess: "Спасибо, мы скоро с вами свяжемся",
+		failure: "Что-то пошло не так..."
+	};
+
+	let form = document.querySelector('.main-form'),
+		input = form.getElementsByTagName('input'),
+		statusMessage = document.createElement('div');
+
+	statusMessage.classList.add('status');
+
+	form.addEventListener('submit', function (event) {
+		event.preventDefault();
+		form.appendChild(statusMessage);
+
+		let request = new XMLHttpRequest();
+		request.open('POST', 'server.php');
+		// request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+		request.setRequestHeader('Content-Type', 'application/json charset=utf-8');
+
+		let formData = new FormData(form);
+
+		let obj = {};
+		formData.forEach((value, key) => {
+			obj[key] = value;
+		});
+
+		let json = JSON.stringify(obj);
+
+		request.send(json);
+
+		request.addEventListener('readystatechange', function () {
+			if (request.readyState < 4) {
+				statusMessage.innerHTML = message.loading;
+			} else if (request.readyState === 4 && request.status === 200) {
+				statusMessage.innerHTML = message.sucsess;
+			} else {
+				statusMessage.innerHTML = message.failure;
+			}
+		});
+
+		for (let i = 0; i < input.length; i++) {
+			input[i].value = '';
+		}
+	});
 });
